@@ -43,18 +43,32 @@ class WeatherServiceTest {
     @Test
     void getWeatherForCities_ShouldReturnWeatherForAllCities() {
         // Given
-        when(weatherClient.getWeatherData(anyList())).thenReturn(List.of(sampleCityWeather));
+        Forecast forecast1Cracow = new Forecast("2024-06-21", 26.5, 11.5, 19.5, 14.0, 1.0, 0.0, 70.0, 9.0, 7.5);
+        Forecast forecast2Cracow = new Forecast("2024-06-22", 27.0, 12.0, 20.0, 14.5, 1.2, 0.0, 72.0, 9.5, 7.8);
+        Forecast forecast3Cracow = new Forecast("2024-06-23", 28.0, 13.0, 21.0, 15.0, 1.4, 0.0, 74.0, 10.0, 8.0);
+        CityWeather sampleCityWeatherCracow = new CityWeather("Cracow", List.of(forecast1Cracow, forecast2Cracow, forecast3Cracow));
+
+        when(weatherClient.getWeatherData(anyList())).thenReturn(List.of(sampleCityWeather, sampleCityWeatherCracow));
 
         // When
         List<CityWeather> result = weatherService.getWeatherForCities();
-        CityWeather cityWeather = result.get(0);
+
+        CityWeather wroclawWeather = result.stream().filter(c -> c.getCity().equals("Wroclaw")).findFirst().orElse(null);
+        CityWeather cracowWeather = result.stream().filter(c -> c.getCity().equals("Cracow")).findFirst().orElse(null);
 
         // Then
         assertNotNull(result);
-        assertEquals(1, result.size());
+        assertEquals(2, result.size());
 
-        assertEquals("Wroclaw", cityWeather.getCity());
-        assertEquals(3, cityWeather.getForecasts().size());
+        assertNotNull(wroclawWeather);
+        assertNotNull(cracowWeather);
+
+        assertEquals("Wroclaw", wroclawWeather.getCity());
+        assertEquals(3, wroclawWeather.getForecasts().size());
+
+        assertEquals("Cracow", cracowWeather.getCity());
+        assertEquals(3, cracowWeather.getForecasts().size());
+
         verify(weatherClient, times(1)).getWeatherData(anyList());
     }
 
